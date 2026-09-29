@@ -1,0 +1,3593 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<title>VAR CONTROL</title>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+--bg:#070b0f;
+--panel:#0d1319;
+--panel2:#111a21;
+--border:#26323c;
+--text:#eef4f7;
+--muted:#84929d;
+--green:#19d37e;
+--red:#ff3f4f;
+--yellow:#f5c84c;
+--blue:#2fa7ff;
+}
+
+html,body{
+width:100%;
+height:100%;
+overflow:hidden;
+background:var(--bg);
+color:var(--text);
+font-family:Arial,Tahoma,sans-serif;
+}
+
+button{
+font-family:inherit;
+-webkit-tap-highlight-color:transparent;
+}
+
+.app{
+width:100%;
+height:100dvh;
+display:grid;
+grid-template-rows:64px 1fr 28px;
+overflow:hidden;
+}
+
+.header{
+background:#090e13;
+border-bottom:1px solid var(--border);
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 18px;
+gap:15px;
+}
+
+.brand{
+display:flex;
+align-items:center;
+gap:12px;
+}
+
+.brand-logo{
+width:40px;
+height:40px;
+border:1px solid #34434e;
+border-radius:9px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:900;
+font-size:13px;
+background:#111920;
+}
+
+.brand-text h1{
+font-size:17px;
+letter-spacing:1.5px;
+}
+
+.brand-text p{
+font-size:10px;
+color:var(--muted);
+margin-top:3px;
+}
+
+.header-right{
+display:flex;
+align-items:center;
+gap:8px;
+}
+
+.live-status{
+height:34px;
+padding:0 12px;
+border:1px solid #343f48;
+border-radius:7px;
+display:flex;
+align-items:center;
+gap:8px;
+font-size:11px;
+font-weight:bold;
+}
+
+.live-dot{
+width:8px;
+height:8px;
+border-radius:50%;
+background:#59646d;
+}
+
+.live-status.active{
+border-color:rgba(25,211,126,.35);
+color:var(--green);
+}
+
+.live-status.active .live-dot{
+background:var(--green);
+box-shadow:0 0 10px var(--green);
+}
+
+.header-btn{
+height:34px;
+border:1px solid var(--border);
+background:#10171d;
+color:#dce4e8;
+border-radius:7px;
+padding:0 12px;
+cursor:pointer;
+font-size:11px;
+}
+
+.header-btn:hover{
+background:#18222a;
+}
+
+.main{
+min-height:0;
+display:grid;
+grid-template-columns:245px minmax(0,1fr) 285px;
+gap:8px;
+padding:8px;
+overflow:hidden;
+}
+
+.panel{
+min-width:0;
+min-height:0;
+background:var(--panel);
+border:1px solid var(--border);
+border-radius:9px;
+overflow:hidden;
+}
+
+.left{
+display:flex;
+flex-direction:column;
+}
+
+.panel-title{
+height:44px;
+padding:0 13px;
+border-bottom:1px solid var(--border);
+display:flex;
+align-items:center;
+justify-content:space-between;
+font-size:12px;
+font-weight:bold;
+}
+
+.panel-title small{
+color:var(--muted);
+font-size:9px;
+}
+
+.camera-list{
+padding:8px;
+overflow:auto;
+flex:1;
+}
+
+.camera{
+border:1px solid var(--border);
+background:#0b1116;
+border-radius:8px;
+padding:10px;
+margin-bottom:7px;
+cursor:pointer;
+transition:.15s;
+}
+
+.camera:hover{
+border-color:#3a4a56;
+}
+
+.camera.selected{
+border-color:rgba(25,211,126,.6);
+background:#0d1715;
+}
+
+.camera-head{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:7px;
+}
+
+.camera-name{
+font-size:12px;
+font-weight:bold;
+}
+
+.camera-state{
+display:flex;
+align-items:center;
+gap:5px;
+color:var(--muted);
+font-size:9px;
+}
+
+.camera-state i{
+width:6px;
+height:6px;
+background:#515d65;
+border-radius:50%;
+}
+
+.camera.connected .camera-state{
+color:var(--green);
+}
+
+.camera.connected .camera-state i{
+background:var(--green);
+}
+
+.camera-info{
+display:flex;
+gap:6px;
+font-size:9px;
+color:var(--muted);
+}
+
+.camera-memory{
+margin-top:8px;
+height:3px;
+background:#202a31;
+border-radius:20px;
+overflow:hidden;
+}
+
+.camera-memory span{
+display:block;
+height:100%;
+background:var(--green);
+transition:.3s;
+}
+
+.empty{
+text-align:center;
+padding:20px 10px;
+color:#66747e;
+font-size:10px;
+line-height:1.7;
+}
+
+.qr-box{
+border-top:1px solid var(--border);
+padding:11px;
+}
+
+.qr-title{
+font-size:10px;
+font-weight:bold;
+margin-bottom:8px;
+text-align:center;
+}
+
+.qr-wrap{
+background:white;
+border-radius:7px;
+width:150px;
+height:150px;
+margin:auto;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:7px;
+}
+
+#qrcode{
+width:136px;
+height:136px;
+}
+
+.qr-link{
+margin-top:8px;
+text-align:center;
+color:var(--muted);
+font-size:8px;
+word-break:break-all;
+line-height:1.5;
+}
+
+.qr-note{
+margin-top:7px;
+text-align:center;
+color:#6f818b;
+font-size:8px;
+}
+
+.center{
+display:flex;
+flex-direction:column;
+min-width:0;
+}
+
+.video-area{
+flex:1;
+min-height:0;
+position:relative;
+background:#020405;
+overflow:hidden;
+touch-action:none;
+}
+
+#mainVideo{
+width:100%;
+height:100%;
+object-fit:contain;
+background:#020405;
+display:block;
+transform-origin:center center;
+will-change:transform;
+user-select:none;
+-webkit-user-select:none;
+}
+
+.video-overlay{
+position:absolute;
+inset:0;
+pointer-events:none;
+}
+
+.video-top{
+position:absolute;
+top:12px;
+right:12px;
+left:12px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+}
+
+.source-label{
+background:rgba(4,8,11,.82);
+border:1px solid rgba(255,255,255,.12);
+padding:7px 10px;
+border-radius:5px;
+font-size:10px;
+}
+
+.rec-indicator{
+background:rgba(255,45,58,.9);
+padding:7px 9px;
+border-radius:5px;
+font-size:9px;
+font-weight:bold;
+display:none;
+}
+
+.rec-indicator.active{
+display:block;
+}
+
+.video-bottom{
+position:absolute;
+bottom:10px;
+right:10px;
+left:10px;
+display:flex;
+justify-content:space-between;
+align-items:end;
+}
+
+.video-time{
+background:rgba(4,8,11,.85);
+border:1px solid rgba(255,255,255,.1);
+padding:6px 8px;
+border-radius:5px;
+font-size:9px;
+}
+
+.mode-badge{
+padding:6px 9px;
+background:rgba(25,211,126,.12);
+border:1px solid rgba(25,211,126,.3);
+color:var(--green);
+border-radius:5px;
+font-size:9px;
+font-weight:bold;
+}
+
+.mode-badge.replay{
+color:var(--yellow);
+background:rgba(245,200,76,.1);
+border-color:rgba(245,200,76,.3);
+}
+
+.timeline-box{
+height:145px;
+background:#0a1015;
+border-top:1px solid var(--border);
+padding:12px;
+}
+
+.timeline-head{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:10px;
+}
+
+.timeline-head strong{
+font-size:11px;
+}
+
+.timeline-head span{
+font-size:9px;
+color:var(--muted);
+}
+
+.timeline{
+height:36px;
+position:relative;
+background:#131b21;
+border:1px solid #27333b;
+border-radius:6px;
+overflow:hidden;
+cursor:pointer;
+direction:ltr;
+}
+
+.timeline-buffer{
+position:absolute;
+inset:0;
+display:flex;
+align-items:stretch;
+}
+
+.timeline-segment{
+height:100%;
+border-left:1px solid rgba(255,255,255,.07);
+background:#173126;
+}
+
+.timeline-segment:nth-child(even){
+background:#1a392d;
+}
+
+.timeline-playhead{
+position:absolute;
+top:0;
+bottom:0;
+left:auto;
+right:0;
+width:2px;
+background:var(--red);
+box-shadow:0 0 7px rgba(255,63,79,.8);
+pointer-events:none;
+}
+
+.timeline-labels{
+display:flex;
+justify-content:space-between;
+color:#697680;
+font-size:8px;
+margin-top:5px;
+}
+
+.replay-controls{
+margin-top:9px;
+display:flex;
+gap:5px;
+align-items:center;
+justify-content:center;
+flex-wrap:wrap;
+}
+
+.ctrl{
+min-width:48px;
+height:29px;
+border:1px solid var(--border);
+background:#111a20;
+color:#e9eff2;
+border-radius:6px;
+font-size:9px;
+cursor:pointer;
+}
+
+.ctrl:hover{
+background:#19242c;
+}
+
+.ctrl.main{
+min-width:68px;
+border-color:rgba(25,211,126,.35);
+color:var(--green);
+}
+
+.ctrl.live{
+border-color:rgba(255,63,79,.35);
+color:#ff6874;
+}
+
+.speed-select{
+height:29px;
+border:1px solid var(--border);
+background:#111a20;
+color:#e9eff2;
+border-radius:6px;
+padding:0 7px;
+font-size:9px;
+outline:none;
+}
+
+.right{
+display:flex;
+flex-direction:column;
+}
+
+.info-box{
+padding:11px;
+border-bottom:1px solid var(--border);
+}
+
+.info-name{
+font-size:14px;
+font-weight:bold;
+}
+
+.info-status{
+margin-top:5px;
+font-size:9px;
+color:var(--muted);
+}
+
+.stat-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:6px;
+margin-top:10px;
+}
+
+.stat{
+background:#0a1015;
+border:1px solid var(--border);
+border-radius:6px;
+padding:8px;
+}
+
+.stat span{
+display:block;
+color:var(--muted);
+font-size:8px;
+margin-bottom:5px;
+}
+
+.stat strong{
+font-size:12px;
+}
+
+.controls{
+padding:10px;
+overflow:auto;
+flex:1;
+}
+
+.section{
+margin-bottom:12px;
+}
+
+.section-title{
+color:#8998a3;
+font-size:9px;
+font-weight:bold;
+margin-bottom:7px;
+}
+
+.button-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:6px;
+}
+
+.action{
+min-height:36px;
+border:1px solid var(--border);
+background:#10171d;
+color:#dce4e8;
+border-radius:6px;
+cursor:pointer;
+font-size:10px;
+}
+
+.action:hover{
+background:#18222a;
+}
+
+.action.danger{
+color:#ff6874;
+border-color:rgba(255,63,79,.25);
+}
+
+.zoom-display{
+height:42px;
+display:flex;
+align-items:center;
+justify-content:center;
+border:1px solid var(--border);
+background:#090f14;
+border-radius:6px;
+font-size:18px;
+font-weight:bold;
+margin-bottom:6px;
+}
+
+.zoom-buttons{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:5px;
+}
+
+.zoom-buttons button{
+height:32px;
+border:1px solid var(--border);
+background:#111a20;
+color:white;
+border-radius:6px;
+cursor:pointer;
+font-size:11px;
+}
+
+.speed-grid{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:4px;
+}
+
+.speed-grid button{
+height:31px;
+border:1px solid var(--border);
+background:#111a20;
+color:#dce4e8;
+border-radius:6px;
+font-size:9px;
+cursor:pointer;
+}
+
+.speed-grid button.active{
+color:var(--yellow);
+border-color:rgba(245,200,76,.5);
+background:rgba(245,200,76,.08);
+}
+
+.pan-help{
+margin-top:7px;
+padding:8px;
+border:1px solid var(--border);
+border-radius:6px;
+background:#090f14;
+color:#71808a;
+font-size:8px;
+line-height:1.6;
+}
+
+.footer{
+background:#080d11;
+border-top:1px solid var(--border);
+display:flex;
+align-items:center;
+justify-content:center;
+color:#56636c;
+font-size:8px;
+letter-spacing:.5px;
+}
+
+.notice{
+position:fixed;
+bottom:40px;
+left:50%;
+transform:translateX(-50%) translateY(20px);
+background:#111b22;
+border:1px solid #35444e;
+padding:10px 15px;
+border-radius:7px;
+font-size:10px;
+opacity:0;
+pointer-events:none;
+transition:.2s;
+z-index:1000;
+}
+
+.notice.show{
+opacity:1;
+transform:translateX(-50%) translateY(0);
+}
+
+body.fullscreen .header,
+body.fullscreen .footer{
+display:none;
+}
+
+body.fullscreen .app{
+grid-template-rows:1fr;
+}
+
+body.fullscreen .main{
+padding:0;
+}
+
+body.fullscreen .panel{
+border-radius:0;
+}
+
+@media(max-width:800px){
+
+html,body{
+overflow:auto;
+}
+
+.app{
+height:auto;
+min-height:100dvh;
+grid-template-rows:55px auto 25px;
+}
+
+.main{
+grid-template-columns:1fr;
+grid-template-rows:190px minmax(350px,1fr) auto;
+overflow:visible;
+}
+
+.left{
+min-height:190px;
+}
+
+.camera-list{
+display:flex;
+gap:6px;
+}
+
+.camera{
+min-width:170px;
+margin:0;
+}
+
+.qr-box{
+display:none;
+}
+
+.right{
+min-height:190px;
+}
+
+.video-area{
+min-height:350px;
+}
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header class="header">
+
+<div class="brand">
+<div class="brand-logo">VAR</div>
+
+<div class="brand-text">
+<h1>VAR CONTROL</h1>
+<p>غرفة تقنية الفيديو والمراقبة</p>
+</div>
+</div>
+
+<div class="header-right">
+
+<div id="liveStatus" class="live-status">
+<span class="live-dot"></span>
+<span id="liveText">لا توجد كاميرا</span>
+</div>
+
+<button class="header-btn" onclick="toggleFullscreen()">
+ملء الشاشة
+</button>
+
+</div>
+
+</header>
+
+
+<main class="main">
+
+<aside class="panel left">
+
+<div class="panel-title">
+<span>مصادر الكاميرات</span>
+<small id="cameraCount">0 / 4</small>
+</div>
+
+<div id="cameraList" class="camera-list">
+<div class="empty">
+افتح الجوال وامسح رمز QR لإضافة الكاميرا.
+</div>
+</div>
+
+<div class="qr-box">
+
+<div class="qr-title">
+امسح الكود بالجوال
+</div>
+
+<div class="qr-wrap">
+<div id="qrcode"></div>
+</div>
+
+<div id="phoneUrl" class="qr-link">
+جاري إنشاء رابط الجوال...
+</div>
+
+<div class="qr-note">
+بعد المسح سيفتح الجوال صفحة الكاميرا تلقائيًا
+</div>
+
+</div>
+
+</aside>
+
+
+<section class="panel center">
+
+<div class="video-area" id="videoArea">
+
+<video
+id="mainVideo"
+autoplay
+playsinline
+muted>
+</video>
+
+<div class="video-overlay">
+
+<div class="video-top">
+
+<div id="sourceLabel" class="source-label">
+لا توجد إشارة
+</div>
+
+<div id="recIndicator" class="rec-indicator">
+● REC
+</div>
+
+</div>
+
+<div class="video-bottom">
+
+<div id="videoTime" class="video-time">
+LIVE
+</div>
+
+<div id="modeBadge" class="mode-badge">
+LIVE
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="timeline-box">
+
+<div class="timeline-head">
+
+<strong>ذاكرة الإعادة — آخر 90 ثانية</strong>
+
+<span id="memoryText">
+0 / 90 ثانية
+</span>
+
+</div>
+
+<div id="timeline" class="timeline">
+
+<div id="timelineBuffer" class="timeline-buffer"></div>
+
+<div id="timelinePlayhead" class="timeline-playhead"></div>
+
+</div>
+
+<div class="timeline-labels">
+<span>الان</span>
+<span>45 ثانية</span>
+<span>الاقدم</span>
+</div>
+
+<div class="replay-controls">
+
+<button class="ctrl" onclick="seekRelative(-60)">
+−60
+</button>
+
+<button class="ctrl" onclick="seekRelative(-30)">
+−30
+</button>
+
+<button class="ctrl" onclick="seekRelative(-10)">
+−10
+</button>
+
+<button id="replayButton" class="ctrl main" onclick="toggleReplay()">
+إعادة
+</button>
+
+<button class="ctrl" onclick="seekRelative(10)">
++10
+</button>
+
+<button class="ctrl live" onclick="goLive()">
+LIVE
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+
+<aside class="panel right">
+
+<div class="panel-title">
+<span>محطة التحكم</span>
+<small>CONTROL</small>
+</div>
+
+
+<div class="info-box">
+
+<div id="infoName" class="info-name">
+لا توجد كاميرا
+</div>
+
+<div id="infoStatus" class="info-status">
+في انتظار الاتصال...
+</div>
+
+<div class="stat-grid">
+
+<div class="stat">
+<span>الحالة</span>
+<strong id="statStatus">OFF</strong>
+</div>
+
+<div class="stat">
+<span>الذاكرة</span>
+<strong id="statMemory">0s</strong>
+</div>
+
+<div class="stat">
+<span>الدقة</span>
+<strong id="statResolution">—</strong>
+</div>
+
+<div class="stat">
+<span>الوضع</span>
+<strong id="statMode">LIVE</strong>
+</div>
+
+</div>
+
+</div>
+
+
+<div class="controls">
+
+
+<div class="section">
+
+<div class="section-title">
+سرعة الإعادة
+</div>
+
+<div class="speed-grid">
+
+<button data-speed="0.25" onclick="setSpeed(.25)">
+0.25x
+</button>
+
+<button data-speed="0.5" onclick="setSpeed(.5)">
+0.5x
+</button>
+
+<button data-speed="1" class="active" onclick="setSpeed(1)">
+1x
+</button>
+
+<button data-speed="1.5" onclick="setSpeed(1.5)">
+1.5x
+</button>
+
+<button data-speed="2" onclick="setSpeed(2)">
+2x
+</button>
+
+</div>
+
+</div>
+
+
+<div class="section">
+
+<div class="section-title">
+التكبير والتحريك
+</div>
+
+<div id="zoomDisplay" class="zoom-display">
+1.0x
+</div>
+
+<div class="zoom-buttons">
+
+<button onclick="changeZoom(-0.5)">
+−
+</button>
+
+<button onclick="resetZoom()">
+RESET
+</button>
+
+<button onclick="changeZoom(.5)">
++
+</button>
+
+</div>
+
+<div class="pan-help">
+عند التكبير اسحب الصورة بالماوس أو الإصبع لتحريكها يمينًا ويسارًا وفوق وتحت.
+</div>
+
+</div>
+
+
+<div class="section">
+
+<div class="section-title">
+الإعادة السريعة
+</div>
+
+<div class="button-grid">
+
+<button class="action" onclick="seekRelative(-10)">
+رجوع 10 ث
+</button>
+
+<button class="action" onclick="seekRelative(-30)">
+رجوع 30 ث
+</button>
+
+<button class="action" onclick="seekRelative(-60)">
+رجوع 60 ث
+</button>
+
+<button class="action" onclick="goLive()">
+البث المباشر
+</button>
+
+</div>
+
+</div>
+
+
+<div class="section">
+
+<div class="section-title">
+النظام
+</div>
+
+<div class="button-grid">
+
+<button class="action" onclick="toggleMute()">
+كتم الصوت
+</button>
+
+<button class="action" onclick="showCameraInfo()">
+معلومات
+</button>
+
+<button class="action danger" onclick="disconnectSelected()">
+فصل الكاميرا
+</button>
+
+<button class="action" onclick="clearReplay()">
+مسح الذاكرة
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</aside>
+
+</main>
+
+
+<footer class="footer">
+صنع بواسطة عبدالملك
+</footer>
+
+</div>
+
+
+<div id="notice" class="notice"></div>
+
+
+<script>
+
+/* =========================
+   الإعدادات
+========================= */
+
+const MAX_CAMERAS = 4;
+const MAX_RECORD_SECONDS = 90;
+const SEGMENT_MS = 3000;
+
+
+/* =========================
+   العناصر
+========================= */
+
+const mainVideo = document.getElementById("mainVideo");
+const videoArea = document.getElementById("videoArea");
+
+const cameraList = document.getElementById("cameraList");
+const cameraCount = document.getElementById("cameraCount");
+
+const liveStatus = document.getElementById("liveStatus");
+const liveText = document.getElementById("liveText");
+
+const sourceLabel = document.getElementById("sourceLabel");
+const recIndicator = document.getElementById("recIndicator");
+
+const videoTime = document.getElementById("videoTime");
+const modeBadge = document.getElementById("modeBadge");
+
+const memoryText = document.getElementById("memoryText");
+
+const timeline = document.getElementById("timeline");
+const timelineBuffer = document.getElementById("timelineBuffer");
+const timelinePlayhead = document.getElementById("timelinePlayhead");
+
+const infoName = document.getElementById("infoName");
+const infoStatus = document.getElementById("infoStatus");
+
+const statStatus = document.getElementById("statStatus");
+const statMemory = document.getElementById("statMemory");
+const statResolution = document.getElementById("statResolution");
+const statMode = document.getElementById("statMode");
+
+const zoomDisplay = document.getElementById("zoomDisplay");
+const replayButton = document.getElementById("replayButton");
+
+const notice = document.getElementById("notice");
+
+
+/* =========================
+   الحالة
+========================= */
+
+let cameras = [];
+let selectedCamera = null;
+
+let peer = null;
+
+let isReplay = false;
+let replayPlaying = false;
+let replayGlobalTime = 0;
+
+let playbackSpeed = 1;
+
+
+/* =========================
+   Zoom + Pan
+========================= */
+
+let zoom = 1;
+
+let panX = 0;
+let panY = 0;
+
+let dragging = false;
+
+let dragStartX = 0;
+let dragStartY = 0;
+
+let initialPanX = 0;
+let initialPanY = 0;
+
+
+/* =========================
+   Zoom
+========================= */
+
+function changeZoom(amount){
+
+zoom += amount;
+
+zoom = Math.max(
+1,
+Math.min(
+5,
+zoom
+)
+);
+
+if(zoom === 1){
+
+panX = 0;
+panY = 0;
+
+}
+
+applyTransform();
+
+}
+
+
+function resetZoom(){
+
+zoom = 1;
+
+panX = 0;
+panY = 0;
+
+applyTransform();
+
+}
+
+
+function applyTransform(){
+
+mainVideo.style.transform =
+`translate(${panX}px,${panY}px) scale(${zoom})`;
+
+zoomDisplay.textContent =
+zoom.toFixed(1) + "x";
+
+}
+
+
+/* =========================
+   تحريك الصورة بالماوس
+========================= */
+
+videoArea.addEventListener(
+"pointerdown",
+function(event){
+
+if(zoom <= 1)
+return;
+
+dragging = true;
+
+videoArea.setPointerCapture(
+event.pointerId
+);
+
+dragStartX = event.clientX;
+dragStartY = event.clientY;
+
+initialPanX = panX;
+initialPanY = panY;
+
+}
+);
+
+
+videoArea.addEventListener(
+"pointermove",
+function(event){
+
+if(!dragging)
+return;
+
+panX =
+initialPanX +
+(
+event.clientX -
+dragStartX
+);
+
+panY =
+initialPanY +
+(
+event.clientY -
+dragStartY
+);
+
+applyTransform();
+
+}
+);
+
+
+videoArea.addEventListener(
+"pointerup",
+function(){
+
+dragging = false;
+
+}
+);
+
+
+videoArea.addEventListener(
+"pointercancel",
+function(){
+
+dragging = false;
+
+}
+);
+
+
+/* =========================
+   سرعة الإعادة
+========================= */
+
+function setSpeed(speed){
+
+playbackSpeed = speed;
+
+mainVideo.playbackRate =
+speed;
+
+
+document
+.querySelectorAll(
+".speed-grid button"
+)
+.forEach(
+button => {
+
+button.classList.toggle(
+"active",
+Number(
+button.dataset.speed
+) === speed
+);
+
+}
+);
+
+
+showNotice(
+"سرعة الإعادة: " +
+speed +
+"x"
+);
+
+}
+
+
+/* =========================
+   PeerJS
+========================= */
+
+function initializePeer(){
+
+if(typeof Peer === "undefined"){
+
+showNotice(
+"تعذر تحميل نظام الاتصال"
+);
+
+return;
+
+}
+
+
+peer = new Peer();
+
+
+peer.on(
+"open",
+function(id){
+
+console.log(
+"Computer Peer ID:",
+id
+);
+
+
+/*
+تحويل computer.html
+إلى phone.html
+*/
+
+const url =
+new URL(
+window.location.href
+);
+
+url.pathname =
+url.pathname.replace(
+/\/[^\/]*$/,
+"/phone.html"
+);
+
+url.search = "";
+
+url.searchParams.set(
+"viewer",
+id
+);
+
+const phoneUrl =
+url.toString();
+
+
+document.getElementById(
+"phoneUrl"
+).textContent =
+phoneUrl;
+
+
+const qr =
+document.getElementById(
+"qrcode"
+);
+
+
+qr.innerHTML = "";
+
+
+new QRCode(
+qr,
+{
+text:phoneUrl,
+width:136,
+height:136,
+correctLevel:
+QRCode.CorrectLevel.M
+}
+);
+
+
+showNotice(
+"تم تجهيز QR للجوال"
+);
+
+}
+);
+
+
+peer.on(
+"call",
+function(call){
+
+call.answer();
+
+
+call.on(
+"stream",
+function(stream){
+
+let cam =
+cameras.find(
+c =>
+c.peerId ===
+call.peer
+);
+
+
+if(cam){
+
+cam.stream =
+stream;
+
+cam.connected =
+true;
+
+startRecording(
+cam
+);
+
+if(
+selectedCamera ===
+cam.id
+){
+
+goLive();
+
+}
+
+renderCameras();
+updateSelectedUI();
+updateLiveStatus();
+
+return;
+
+}
+
+
+if(
+cameras.filter(
+c => c.connected
+).length >=
+MAX_CAMERAS
+){
+
+showNotice(
+"وصلت للحد الأقصى للكاميرات"
+);
+
+return;
+
+}
+
+
+const id =
+"cam_" +
+Date.now() +
+"_" +
+Math.random()
+.toString(36)
+.slice(2,8);
+
+
+cam = {
+
+id:id,
+
+name:
+"كاميرا " +
+(
+cameras.length +
+1
+),
+
+peerId:
+call.peer,
+
+stream:
+stream,
+
+connected:true,
+
+recorder:null,
+
+recorderTimer:null,
+
+segmentStarted:0,
+
+segmentBlob:null,
+
+segments:[],
+
+totalDuration:0,
+
+recordingEnabled:true
+
+};
+
+
+cameras.push(cam);
+
+
+if(!selectedCamera){
+
+selectedCamera =
+cam.id;
+
+mainVideo.srcObject =
+stream;
+
+mainVideo.play()
+.catch(
+()=>{}
+);
+
+}
+
+
+startRecording(cam);
+
+renderCameras();
+
+updateSelectedUI();
+
+updateLiveStatus();
+
+
+showNotice(
+cam.name +
+" متصلة"
+);
+
+}
+);
+
+
+call.on(
+"close",
+function(){
+
+const cam =
+cameras.find(
+c =>
+c.peerId ===
+call.peer
+);
+
+if(cam){
+
+cam.connected =
+false;
+
+cam.recordingEnabled =
+false;
+
+stopRecording(cam);
+
+renderCameras();
+
+updateSelectedUI();
+
+updateLiveStatus();
+
+}
+
+}
+);
+
+
+call.on(
+"error",
+function(error){
+
+console.error(
+error
+);
+
+}
+);
+
+});
+
+
+peer.on(
+"error",
+function(error){
+
+console.error(
+error
+);
+
+showNotice(
+"حدث خطأ في الاتصال"
+);
+
+}
+);
+
+}
+
+
+/* =========================
+   التسجيل
+========================= */
+
+function startRecording(cam){
+
+if(!cam || !cam.stream)
+return;
+
+
+cam.recordingEnabled =
+true;
+
+
+stopRecording(
+cam,
+false
+);
+
+
+startNewSegment(
+cam
+);
+
+}
+
+
+function startNewSegment(cam){
+
+if(
+!cam ||
+!cam.connected ||
+!cam.recordingEnabled
+)
+return;
+
+
+if(
+!cam.stream ||
+!cam.stream
+.getTracks()
+.some(
+track =>
+track.readyState ===
+"live"
+)
+)
+return;
+
+
+let options = {};
+
+const types = [
+
+"video/webm;codecs=vp9,opus",
+"video/webm;codecs=vp8,opus",
+"video/webm"
+
+];
+
+
+for(
+const type of types
+){
+
+if(
+MediaRecorder.isTypeSupported(
+type
+)
+){
+
+options.mimeType =
+type;
+
+break;
+
+}
+
+}
+
+
+let recorder;
+
+
+try{
+
+recorder =
+new MediaRecorder(
+cam.stream,
+options
+);
+
+}catch(error){
+
+console.error(
+error
+);
+
+return;
+
+}
+
+
+cam.recorder =
+recorder;
+
+cam.segmentStarted =
+Date.now();
+
+cam.segmentBlob =
+null;
+
+
+recorder.ondataavailable =
+function(event){
+
+if(
+event.data &&
+event.data.size > 0
+){
+
+cam.segmentBlob =
+event.data;
+
+}
+
+};
+
+
+recorder.onstop =
+function(){
+
+const duration =
+(
+Date.now() -
+cam.segmentStarted
+) / 1000;
+
+
+if(cam.segmentBlob){
+
+const blob =
+cam.segmentBlob;
+
+const url =
+URL.createObjectURL(
+blob
+);
+
+cam.segments.push({
+
+blob:blob,
+
+url:url,
+
+start:
+cam.segmentStarted,
+
+duration:
+Math.max(
+0.1,
+duration
+)
+
+});
+
+}
+
+
+cam.segmentBlob =
+null;
+
+cam.recorder =
+null;
+
+
+cleanupSegments(cam);
+
+updateTimeline();
+
+
+if(
+cam.connected &&
+cam.recordingEnabled
+){
+
+setTimeout(
+function(){
+
+startNewSegment(
+cam
+);
+
+},
+20
+);
+
+}
+
+};
+
+
+try{
+
+recorder.start();
+
+recIndicator.classList.add(
+"active"
+);
+
+
+cam.recorderTimer =
+setTimeout(
+function(){
+
+if(
+cam.recorder &&
+cam.recorder.state ===
+"recording"
+){
+
+cam.recorder.stop();
+
+}
+
+},
+SEGMENT_MS
+);
+
+}catch(error){
+
+console.error(
+error
+);
+
+}
+
+}
+
+
+function stopRecording(
+cam,
+disable = true
+){
+
+if(!cam)
+return;
+
+
+if(disable){
+
+cam.recordingEnabled =
+false;
+
+}
+
+
+if(cam.recorderTimer){
+
+clearTimeout(
+cam.recorderTimer
+);
+
+cam.recorderTimer =
+null;
+
+}
+
+
+if(
+cam.recorder &&
+cam.recorder.state ===
+"recording"
+){
+
+try{
+
+cam.recorder.stop();
+
+}catch(error){}
+
+}
+
+
+cam.recorder =
+null;
+
+}
+
+
+/* =========================
+   حذف القديم
+========================= */
+
+function cleanupSegments(cam){
+
+let total =
+cam.segments.reduce(
+(sum,s) =>
+sum + s.duration,
+0
+);
+
+
+while(
+total >
+MAX_RECORD_SECONDS &&
+cam.segments.length
+){
+
+const old =
+cam.segments.shift();
+
+total -=
+old.duration;
+
+
+try{
+
+URL.revokeObjectURL(
+old.url
+);
+
+}catch(error){}
+
+}
+
+
+cam.totalDuration =
+Math.max(
+0,
+total
+);
+
+}
+
+
+function getTotalDuration(cam){
+
+if(!cam)
+return 0;
+
+cam.totalDuration =
+cam.segments.reduce(
+(sum,s) =>
+sum + s.duration,
+0
+);
+
+return cam.totalDuration;
+
+}
+
+
+/* =========================
+   إعادة
+========================= */
+
+function enterReplay(
+secondsFromLive
+){
+
+const cam =
+getSelectedCamera();
+
+if(!cam)
+return;
+
+
+const total =
+getTotalDuration(cam);
+
+
+if(total <= 0){
+
+showNotice(
+"لم تتوفر ذاكرة إعادة بعد"
+);
+
+return;
+
+}
+
+
+let target =
+total +
+secondsFromLive;
+
+
+target =
+Math.max(
+0,
+Math.min(
+total - .05,
+target
+)
+);
+
+
+isReplay = true;
+
+replayPlaying = true;
+
+mainVideo.playbackRate =
+playbackSpeed;
+
+
+loadReplayPosition(
+cam,
+target,
+true
+);
+
+updateModeUI();
+
+}
+
+
+function toggleReplay(){
+
+const cam =
+getSelectedCamera();
+
+
+if(!cam){
+
+showNotice(
+"اختر كاميرا أولًا"
+);
+
+return;
+
+}
+
+
+if(!isReplay){
+
+enterReplay(-10);
+
+return;
+
+}
+
+
+if(replayPlaying){
+
+mainVideo.pause();
+
+replayPlaying =
+false;
+
+replayButton.textContent =
+"تشغيل";
+
+}else{
+
+mainVideo.play()
+.catch(
+()=>{}
+);
+
+replayPlaying =
+true;
+
+replayButton.textContent =
+"إيقاف";
+
+}
+
+}
+
+
+function loadReplayPosition(
+cam,
+targetTime,
+autoPlay
+){
+
+const segments =
+cam.segments;
+
+
+if(!segments.length)
+return;
+
+
+let accumulated = 0;
+
+let chosenIndex =
+segments.length - 1;
+
+let localTime = 0;
+
+
+for(
+let i=0;
+i<segments.length;
+i++
+){
+
+const duration =
+segments[i].duration;
+
+
+if(
+targetTime <=
+accumulated +
+duration
+){
+
+chosenIndex =
+i;
+
+localTime =
+targetTime -
+accumulated;
+
+break;
+
+}
+
+
+accumulated +=
+duration;
+
+}
+
+
+localTime =
+Math.max(
+0,
+localTime
+);
+
+
+replayGlobalTime =
+targetTime;
+
+
+const segment =
+segments[chosenIndex];
+
+
+if(
+mainVideo.dataset.segmentUrl ===
+segment.url
+){
+
+try{
+
+mainVideo.currentTime =
+Math.min(
+localTime,
+Math.max(
+0,
+mainVideo.duration -
+.02
+)
+);
+
+mainVideo.playbackRate =
+playbackSpeed;
+
+
+if(autoPlay){
+
+mainVideo.play()
+.catch(
+()=>{}
+);
+
+}
+
+updateReplayUI(
+cam,
+targetTime
+);
+
+return;
+
+}catch(error){}
+
+}
+
+
+mainVideo.pause();
+
+mainVideo.srcObject =
+null;
+
+mainVideo.dataset.segmentUrl =
+segment.url;
+
+mainVideo.src =
+segment.url;
+
+mainVideo.load();
+
+
+const ready =
+function(){
+
+mainVideo.removeEventListener(
+"loadedmetadata",
+ready
+);
+
+
+try{
+
+mainVideo.currentTime =
+Math.min(
+localTime,
+Math.max(
+0,
+mainVideo.duration -
+.02
+)
+);
+
+}catch(error){}
+
+
+mainVideo.playbackRate =
+playbackSpeed;
+
+
+if(autoPlay){
+
+mainVideo.play()
+.catch(
+()=>{}
+);
+
+}
+
+
+updateReplayUI(
+cam,
+targetTime
+);
+
+};
+
+
+mainVideo.addEventListener(
+"loadedmetadata",
+ready
+);
+
+}
+
+
+/* =========================
+   انتهاء المقطع
+========================= */
+
+mainVideo.addEventListener(
+"ended",
+function(){
+
+if(!isReplay)
+return;
+
+
+const cam =
+getSelectedCamera();
+
+if(!cam)
+return;
+
+
+const index =
+cam.segments.findIndex(
+segment =>
+segment.url ===
+mainVideo.dataset.segmentUrl
+);
+
+
+if(
+index >= 0 &&
+index <
+cam.segments.length - 1
+){
+
+let global = 0;
+
+
+for(
+let i=0;
+i<=index;
+i++
+){
+
+global +=
+cam.segments[i].duration;
+
+}
+
+
+loadReplayPosition(
+cam,
+global,
+true
+);
+
+}else{
+
+replayPlaying =
+false;
+
+replayButton.textContent =
+"إعادة";
+
+}
+
+}
+);
+
+
+/* =========================
+   تحريك الإعادة
+========================= */
+
+function seekRelative(
+seconds
+){
+
+const cam =
+getSelectedCamera();
+
+if(!cam){
+
+showNotice(
+"اختر كاميرا أولًا"
+);
+
+return;
+
+}
+
+
+const total =
+getTotalDuration(cam);
+
+
+if(total <= 0){
+
+showNotice(
+"لا توجد ذاكرة إعادة"
+);
+
+return;
+
+}
+
+
+if(!isReplay){
+
+enterReplay(
+seconds
+);
+
+return;
+
+}
+
+
+let target =
+replayGlobalTime +
+seconds;
+
+
+if(
+target >=
+total - .1
+){
+
+goLive();
+
+return;
+
+}
+
+
+target =
+Math.max(
+0,
+Math.min(
+total - .05,
+target
+)
+);
+
+
+loadReplayPosition(
+cam,
+target,
+true
+);
+
+}
+
+
+/* =========================
+   Timeline
+========================= */
+
+timeline.addEventListener(
+"click",
+function(event){
+
+const cam =
+getSelectedCamera();
+
+if(!cam)
+return;
+
+
+const total =
+getTotalDuration(cam);
+
+if(total <= 0)
+return;
+
+
+const rect =
+timeline.getBoundingClientRect();
+
+
+const x =
+event.clientX -
+rect.left;
+
+
+let percent =
+x /
+rect.width;
+
+
+percent =
+Math.max(
+0,
+Math.min(
+1,
+percent
+)
+);
+
+
+if(percent >= .985){
+
+goLive();
+
+return;
+
+}
+
+
+const target =
+percent *
+total;
+
+
+isReplay = true;
+
+replayPlaying = true;
+
+loadReplayPosition(
+cam,
+target,
+true
+);
+
+updateModeUI();
+
+}
+);
+
+
+/* =========================
+   LIVE
+========================= */
+
+function goLive(){
+
+const cam =
+getSelectedCamera();
+
+
+isReplay =
+false;
+
+replayPlaying =
+false;
+
+
+mainVideo.pause();
+
+mainVideo.src =
+"";
+
+mainVideo.dataset.segmentUrl =
+"";
+
+
+if(cam){
+
+mainVideo.srcObject =
+cam.stream;
+
+mainVideo.playbackRate =
+1;
+
+mainVideo.play()
+.catch(
+()=>{}
+);
+
+}
+
+
+replayButton.textContent =
+"إعادة";
+
+updateModeUI();
+
+updateTimeline();
+
+}
+
+
+/* =========================
+   Replay UI
+========================= */
+
+function updateReplayUI(
+cam,
+target
+){
+
+const total =
+getTotalDuration(cam);
+
+
+replayGlobalTime =
+target;
+
+
+const percent =
+total > 0
+? target / total
+: 1;
+
+
+timelinePlayhead.style.left =
+(percent * 100) + "%";
+
+timelinePlayhead.style.right =
+"auto";
+
+
+const remaining =
+Math.max(
+0,
+total -
+target
+);
+
+
+videoTime.textContent =
+"-" +
+formatSeconds(
+remaining
+);
+
+
+updateModeUI();
+
+}
+
+
+function updateModeUI(){
+
+if(isReplay){
+
+modeBadge.textContent =
+"REPLAY";
+
+modeBadge.classList.add(
+"replay"
+);
+
+statMode.textContent =
+"REPLAY";
+
+replayButton.textContent =
+replayPlaying
+? "إيقاف"
+: "تشغيل";
+
+}else{
+
+modeBadge.textContent =
+"LIVE";
+
+modeBadge.classList.remove(
+"replay"
+);
+
+statMode.textContent =
+"LIVE";
+
+replayButton.textContent =
+"إعادة";
+
+videoTime.textContent =
+"LIVE";
+
+}
+
+}
+
+
+/* =========================
+   Timeline
+========================= */
+
+function updateTimeline(){
+
+const cam =
+getSelectedCamera();
+
+timelineBuffer.innerHTML =
+"";
+
+
+if(!cam){
+
+memoryText.textContent =
+"0 / 90 ثانية";
+
+return;
+
+}
+
+
+const total =
+getTotalDuration(cam);
+
+
+cam.segments.forEach(
+function(segment){
+
+const element =
+document.createElement(
+"div"
+);
+
+element.className =
+"timeline-segment";
+
+
+const width =
+total > 0
+? (
+segment.duration /
+total
+) * 100
+: 0;
+
+
+element.style.width =
+width + "%";
+
+
+timelineBuffer.appendChild(
+element
+);
+
+}
+);
+
+
+memoryText.textContent =
+Math.floor(total) +
+" / " +
+MAX_RECORD_SECONDS +
+" ثانية";
+
+
+statMemory.textContent =
+Math.floor(total) +
+"s";
+
+
+if(!isReplay){
+
+timelinePlayhead.style.left =
+"auto";
+
+timelinePlayhead.style.right =
+"0%";
+
+}
+
+}
+
+
+/* =========================
+   الكاميرات
+========================= */
+
+function renderCameras(){
+
+cameraList.innerHTML =
+"";
+
+
+const connected =
+cameras.filter(
+cam =>
+cam.connected
+);
+
+
+cameraCount.textContent =
+connected.length +
+" / " +
+MAX_CAMERAS;
+
+
+if(!connected.length){
+
+cameraList.innerHTML =
+`
+<div class="empty">
+لا توجد كاميرات متصلة.<br>
+امسح رمز QR من الجوال.
+</div>
+`;
+
+return;
+
+}
+
+
+connected.forEach(
+function(cam){
+
+const element =
+document.createElement(
+"div"
+);
+
+
+element.className =
+"camera " +
+(
+cam.id === selectedCamera
+? "selected "
+: ""
+) +
+"connected";
+
+
+const total =
+getTotalDuration(cam);
+
+
+const percent =
+Math.min(
+100,
+(
+total /
+MAX_RECORD_SECONDS
+) * 100
+);
+
+
+element.innerHTML =
+`
+<div class="camera-head">
+
+<div class="camera-name">
+${escapeHtml(cam.name)}
+</div>
+
+<div class="camera-state">
+<i></i>
+LIVE
+</div>
+
+</div>
+
+<div class="camera-info">
+
+<span>WEBRTC</span>
+<span>•</span>
+<span>${Math.floor(total)}s</span>
+
+</div>
+
+<div class="camera-memory">
+
+<span style="width:${percent}%"></span>
+
+</div>
+`;
+
+
+element.addEventListener(
+"click",
+function(){
+
+selectCamera(
+cam.id
+);
+
+}
+);
+
+
+cameraList.appendChild(
+element
+);
+
+}
+);
+
+}
+
+
+function selectCamera(id){
+
+const cam =
+cameras.find(
+c =>
+c.id === id &&
+c.connected
+);
+
+
+if(!cam)
+return;
+
+
+selectedCamera =
+id;
+
+
+isReplay =
+false;
+
+replayPlaying =
+false;
+
+
+mainVideo.pause();
+
+mainVideo.src =
+"";
+
+mainVideo.dataset.segmentUrl =
+"";
+
+mainVideo.srcObject =
+cam.stream;
+
+mainVideo.play()
+.catch(
+()=>{}
+);
+
+
+mainVideo.playbackRate =
+1;
+
+
+resetZoom();
+
+renderCameras();
+
+updateSelectedUI();
+
+updateTimeline();
+
+}
+
+
+/* =========================
+   معلومات
+========================= */
+
+function updateSelectedUI(){
+
+const cam =
+getSelectedCamera();
+
+
+if(!cam){
+
+infoName.textContent =
+"لا توجد كاميرا";
+
+infoStatus.textContent =
+"في انتظار الاتصال...";
+
+statStatus.textContent =
+"OFF";
+
+statMemory.textContent =
+"0s";
+
+statResolution.textContent =
+"—";
+
+statMode.textContent =
+"LIVE";
+
+sourceLabel.textContent =
+"لا توجد إشارة";
+
+return;
+
+}
+
+
+infoName.textContent =
+cam.name;
+
+
+infoStatus.textContent =
+"متصلة وتقوم بالتسجيل";
+
+
+statStatus.textContent =
+"ONLINE";
+
+
+statMemory.textContent =
+Math.floor(
+getTotalDuration(cam)
+) +
+"s";
+
+
+sourceLabel.textContent =
+cam.name;
+
+
+const track =
+cam.stream
+?.getVideoTracks()[0];
+
+
+if(track){
+
+const settings =
+track.getSettings();
+
+
+if(
+settings.width &&
+settings.height
+){
+
+statResolution.textContent =
+settings.width +
+"×" +
+settings.height;
+
+}
+
+}
+
+
+updateModeUI();
+
+}
+
+
+function getSelectedCamera(){
+
+return cameras.find(
+cam =>
+cam.id ===
+selectedCamera &&
+cam.connected
+) || null;
+
+}
+
+
+function updateLiveStatus(){
+
+const connected =
+cameras.filter(
+cam =>
+cam.connected
+);
+
+
+if(connected.length){
+
+liveStatus.classList.add(
+"active"
+);
+
+liveText.textContent =
+connected.length +
+" كاميرا متصلة";
+
+}else{
+
+liveStatus.classList.remove(
+"active"
+);
+
+liveText.textContent =
+"لا توجد كاميرا";
+
+}
+
+}
+
+
+/* =========================
+   كتم
+========================= */
+
+function toggleMute(){
+
+mainVideo.muted =
+!mainVideo.muted;
+
+
+showNotice(
+mainVideo.muted
+? "تم كتم الصوت"
+: "تم تشغيل الصوت"
+);
+
+}
+
+
+/* =========================
+   مسح الذاكرة
+========================= */
+
+function clearReplay(){
+
+const cam =
+getSelectedCamera();
+
+if(!cam)
+return;
+
+
+cam.segments.forEach(
+segment => {
+
+try{
+
+URL.revokeObjectURL(
+segment.url
+);
+
+}catch(error){}
+
+}
+);
+
+
+cam.segments =
+[];
+
+cam.totalDuration =
+0;
+
+
+goLive();
+
+
+updateTimeline();
+
+
+showNotice(
+"تم مسح ذاكرة الإعادة"
+);
+
+}
+
+
+/* =========================
+   فصل
+========================= */
+
+function disconnectSelected(){
+
+const cam =
+getSelectedCamera();
+
+if(!cam){
+
+showNotice(
+"لا توجد كاميرا محددة"
+);
+
+return;
+
+}
+
+
+cam.recordingEnabled =
+false;
+
+stopRecording(
+cam
+);
+
+
+cam.connected =
+false;
+
+
+if(
+selectedCamera ===
+cam.id
+){
+
+selectedCamera =
+null;
+
+mainVideo.pause();
+
+mainVideo.srcObject =
+null;
+
+mainVideo.removeAttribute(
+"src"
+);
+
+mainVideo.load();
+
+resetZoom();
+
+}
+
+
+renderCameras();
+
+updateSelectedUI();
+
+updateLiveStatus();
+
+updateTimeline();
+
+
+showNotice(
+"تم فصل الكاميرا"
+);
+
+}
+
+
+/* =========================
+   معلومات الكاميرا
+========================= */
+
+function showCameraInfo(){
+
+const cam =
+getSelectedCamera();
+
+
+if(!cam){
+
+showNotice(
+"لا توجد كاميرا"
+);
+
+return;
+
+}
+
+
+showNotice(
+cam.name +
+" • ذاكرة " +
+Math.floor(
+getTotalDuration(cam)
+) +
+" ثانية"
+);
+
+}
+
+
+/* =========================
+   Fullscreen
+========================= */
+
+function toggleFullscreen(){
+
+if(
+!document.fullscreenElement
+){
+
+document.documentElement
+.requestFullscreen()
+.catch(
+()=>{}
+);
+
+}else{
+
+document.exitFullscreen()
+.catch(
+()=>{}
+);
+
+}
+
+}
+
+
+/* =========================
+   إشعار
+========================= */
+
+let noticeTimer;
+
+
+function showNotice(
+message
+){
+
+notice.textContent =
+message;
+
+notice.classList.add(
+"show"
+);
+
+clearTimeout(
+noticeTimer
+);
+
+noticeTimer =
+setTimeout(
+function(){
+
+notice.classList.remove(
+"show"
+);
+
+},
+2200
+);
+
+}
+
+
+/* =========================
+   الوقت
+========================= */
+
+function formatSeconds(
+seconds
+){
+
+seconds =
+Math.max(
+0,
+Math.floor(seconds)
+);
+
+
+const minutes =
+Math.floor(
+seconds / 60
+);
+
+
+const secs =
+seconds % 60;
+
+
+return (
+String(minutes)
+.padStart(2,"0")
++
+":" +
+String(secs)
+.padStart(2,"0")
+);
+
+}
+
+
+/* =========================
+   حماية النص
+========================= */
+
+function escapeHtml(
+value
+){
+
+return String(value)
+
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
+
+}
+
+
+/* =========================
+   تحديث مستمر
+========================= */
+
+setInterval(
+function(){
+
+const cam =
+getSelectedCamera();
+
+
+if(cam){
+
+cleanupSegments(
+cam
+);
+
+updateTimeline();
+
+updateSelectedUI();
+
+}
+
+
+updateLiveStatus();
+
+},
+1000
+);
+
+
+/* =========================
+   تحديث موقع الإعادة
+========================= */
+
+setInterval(
+function(){
+
+if(
+!isReplay ||
+mainVideo.paused
+)
+return;
+
+
+const cam =
+getSelectedCamera();
+
+if(!cam)
+return;
+
+
+const currentUrl =
+mainVideo.dataset.segmentUrl;
+
+
+const index =
+cam.segments.findIndex(
+segment =>
+segment.url ===
+currentUrl
+);
+
+
+if(index < 0)
+return;
+
+
+let base = 0;
+
+
+for(
+let i=0;
+i<index;
+i++
+){
+
+base +=
+cam.segments[i].duration;
+
+}
+
+
+replayGlobalTime =
+base +
+(
+mainVideo.currentTime ||
+0
+);
+
+
+updateReplayUI(
+cam,
+replayGlobalTime
+);
+
+},
+200
+);
+
+
+/* =========================
+   اختصارات الكيبورد
+========================= */
+
+document.addEventListener(
+"keydown",
+function(event){
+
+if(
+event.target.tagName ===
+"INPUT" ||
+event.target.tagName ===
+"TEXTAREA"
+)
+return;
+
+
+switch(event.key){
+
+case "ArrowLeft":
+seekRelative(-10);
+break;
+
+case "ArrowRight":
+seekRelative(10);
+break;
+
+case "1":
+seekRelative(-10);
+break;
+
+case "3":
+seekRelative(-30);
+break;
+
+case "6":
+seekRelative(-60);
+break;
+
+case "0":
+goLive();
+break;
+
+case " ":
+event.preventDefault();
+toggleReplay();
+break;
+
+case "+":
+case "=":
+changeZoom(.5);
+break;
+
+case "-":
+changeZoom(-.5);
+break;
+
+case "f":
+case "F":
+toggleFullscreen();
+break;
+
+}
+
+}
+);
+
+
+/* =========================
+   البداية
+========================= */
+
+initializePeer();
+
+renderCameras();
+
+updateSelectedUI();
+
+updateLiveStatus();
+
+setSpeed(1);
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2118 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width,
+      initial-scale=1.0,
+      maximum-scale=1.0,
+      user-scalable=no">
+
+<title>كاميرا الجوال | VAR</title>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,
+body{
+    margin:0;
+    padding:0;
+    width:100%;
+    min-height:100%;
+    background:#061611;
+    color:#fff;
+    font-family:Arial,Tahoma,sans-serif;
+}
+
+body{
+    overflow-x:hidden;
+}
+
+button{
+    font-family:inherit;
+    -webkit-appearance:none;
+}
+
+.container{
+    width:100%;
+    max-width:650px;
+    margin:auto;
+    padding:15px;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header{
+    text-align:center;
+    margin-bottom:15px;
+}
+
+.header h1{
+    margin:5px 0 10px;
+    font-size:23px;
+    font-weight:900;
+}
+
+.subtitle{
+    color:#759187;
+    font-size:10px;
+    margin-bottom:10px;
+}
+
+.status{
+    padding:12px;
+    border-radius:12px;
+    background:#102f26;
+    border:1px solid #285344;
+    color:#8ff0c8;
+    font-size:13px;
+    line-height:1.5;
+}
+
+.status.ok{
+    color:#7df0b8;
+    border-color:#286b51;
+}
+
+.status.wait{
+    color:#f1d17a;
+    border-color:#66572b;
+    background:#292414;
+}
+
+.status.error{
+    color:#ff8585;
+    border-color:#69313b;
+    background:#32151c;
+}
+
+/* =========================
+   CAMERA
+========================= */
+
+.camera-box{
+    margin-top:15px;
+    background:#091f18;
+    border:1px solid #285245;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.video-container{
+    width:100%;
+    aspect-ratio:9/16;
+    background:#000;
+    position:relative;
+    overflow:hidden;
+    touch-action:none;
+}
+
+#preview{
+    width:100%;
+    height:100%;
+    display:block;
+    background:#000;
+    object-fit:cover;
+
+    transform:
+        translate(0px,0px)
+        scale(1);
+
+    transform-origin:center center;
+
+    user-select:none;
+    -webkit-user-select:none;
+    pointer-events:none;
+}
+
+/* =========================
+   VIDEO OVERLAY
+========================= */
+
+.live{
+    position:absolute;
+    top:12px;
+    left:12px;
+
+    background:#c51e35;
+    padding:7px 10px;
+    border-radius:8px;
+
+    font-size:11px;
+    font-weight:bold;
+
+    pointer-events:none;
+
+    box-shadow:0 3px 12px rgba(0,0,0,.25);
+}
+
+.connection-dot{
+    display:inline-block;
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#7d8790;
+    margin-left:4px;
+}
+
+.connection-dot.active{
+    background:#36e58c;
+    box-shadow:0 0 8px #36e58c;
+}
+
+.zoom-label{
+    position:absolute;
+    top:12px;
+    right:12px;
+
+    background:rgba(0,0,0,.65);
+
+    padding:7px 10px;
+    border-radius:8px;
+
+    font-size:12px;
+    font-weight:bold;
+
+    pointer-events:none;
+}
+
+/* =========================
+   FULLSCREEN
+========================= */
+
+.video-container.fullscreen{
+    position:fixed;
+    inset:0;
+
+    width:100vw;
+    height:100dvh;
+
+    aspect-ratio:auto;
+
+    z-index:99999;
+
+    border-radius:0;
+}
+
+.video-container.fullscreen #preview{
+    object-fit:contain;
+}
+
+.fullscreen-close{
+    position:absolute;
+
+    bottom:20px;
+    right:20px;
+
+    z-index:10;
+
+    width:52px;
+    height:52px;
+
+    border-radius:50%;
+
+    background:rgba(0,0,0,.72);
+
+    color:white;
+
+    border:1px solid rgba(255,255,255,.3);
+
+    display:none;
+
+    font-size:22px;
+}
+
+.video-container.fullscreen .fullscreen-close{
+    display:block;
+}
+
+/* =========================
+   CONTROLS
+========================= */
+
+.controls{
+    padding:15px;
+}
+
+button{
+    border:0;
+    border-radius:13px;
+
+    font-size:15px;
+    font-weight:bold;
+
+    cursor:pointer;
+    color:white;
+}
+
+button:active{
+    transform:scale(.97);
+}
+
+.main-button{
+    width:100%;
+    padding:16px;
+
+    background:#159465;
+
+    margin-bottom:10px;
+}
+
+.main-button:disabled{
+    opacity:.4;
+    cursor:not-allowed;
+}
+
+.control-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+}
+
+.control{
+    min-height:48px;
+
+    background:#173b30;
+
+    border:1px solid #31594c;
+}
+
+.control:hover{
+    background:#1d4b3d;
+}
+
+.control:disabled{
+    opacity:.35;
+    cursor:not-allowed;
+}
+
+.zoom-controls{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+
+    gap:8px;
+
+    margin-top:10px;
+}
+
+.zoom-button{
+    min-height:48px;
+
+    background:#173b30;
+
+    border:1px solid #31594c;
+
+    font-size:24px;
+}
+
+.zoom-value{
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    background:#0c2a21;
+
+    border:1px solid #31594c;
+
+    border-radius:13px;
+
+    color:#83edbb;
+
+    font-weight:bold;
+}
+
+/* =========================
+   INFO
+========================= */
+
+.info{
+    margin-top:15px;
+
+    padding:15px;
+
+    border-radius:15px;
+
+    background:#0b241c;
+
+    border:1px solid #285245;
+
+    color:#9eb6ad;
+
+    line-height:1.8;
+
+    font-size:12px;
+}
+
+.info strong{
+    color:white;
+}
+
+.info-row{
+    display:flex;
+
+    align-items:center;
+    justify-content:space-between;
+
+    gap:10px;
+
+    padding:7px 0;
+
+    border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.info-row:last-child{
+    border-bottom:0;
+}
+
+.info-value{
+    color:#83edbb;
+    font-weight:bold;
+}
+
+/* =========================
+   ERROR BOX
+========================= */
+
+.security-warning{
+    display:none;
+
+    margin-top:10px;
+
+    padding:11px;
+
+    border-radius:10px;
+
+    background:#30151b;
+
+    border:1px solid #64323a;
+
+    color:#ff9a9a;
+
+    font-size:11px;
+
+    line-height:1.7;
+}
+
+.security-warning.show{
+    display:block;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:500px){
+
+    .container{
+        padding:10px;
+    }
+
+    .header h1{
+        font-size:21px;
+    }
+
+    .control-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .camera-box{
+        border-radius:16px;
+    }
+
+}
+
+@media(max-height:700px) and (orientation:landscape){
+
+    .container{
+        max-width:900px;
+    }
+
+    .camera-box{
+        display:flex;
+        flex-direction:row;
+    }
+
+    .video-container{
+        width:45%;
+        aspect-ratio:16/9;
+    }
+
+    .controls{
+        flex:1;
+    }
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+
+        <h1>📱 كاميرا الجوال</h1>
+
+        <div class="subtitle">
+            VAR CONTROL • بث مباشر إلى الكمبيوتر
+        </div>
+
+        <div id="status" class="status wait">
+            جاري الاتصال بالكمبيوتر...
+        </div>
+
+    </div>
+
+
+    <div class="camera-box">
+
+        <div id="videoContainer" class="video-container">
+
+            <video
+                id="preview"
+                autoplay
+                playsinline
+                muted>
+            </video>
+
+            <div class="live">
+                <span class="connection-dot" id="connectionDot"></span>
+                ● مباشر
+            </div>
+
+            <div id="zoomLabel" class="zoom-label">
+                1.0x
+            </div>
+
+            <button
+                id="closeFullscreen"
+                class="fullscreen-close"
+                type="button">
+                ✕
+            </button>
+
+        </div>
+
+
+        <div class="controls">
+
+            <button
+                id="start"
+                class="main-button"
+                disabled
+                type="button">
+
+                ⏳ جاري الاتصال...
+
+            </button>
+
+
+            <div class="control-grid">
+
+                <button
+                    id="switch"
+                    class="control"
+                    disabled
+                    type="button">
+
+                    🔄 تبديل
+
+                </button>
+
+
+                <button
+                    id="fullscreen"
+                    class="control"
+                    type="button">
+
+                    ⛶ ملء الشاشة
+
+                </button>
+
+
+                <button
+                    id="zoomReset"
+                    class="control"
+                    type="button">
+
+                    ↺ 1x
+
+                </button>
+
+
+                <button
+                    id="stop"
+                    class="control"
+                    disabled
+                    type="button">
+
+                    ⏹ إيقاف
+
+                </button>
+
+            </div>
+
+
+            <div class="zoom-controls">
+
+                <button
+                    id="zoomOut"
+                    class="zoom-button"
+                    type="button">
+
+                    −
+
+                </button>
+
+
+                <div
+                    id="zoomValue"
+                    class="zoom-value">
+
+                    1.0x
+
+                </div>
+
+
+                <button
+                    id="zoomIn"
+                    class="zoom-button"
+                    type="button">
+
+                    ＋
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div
+        id="securityWarning"
+        class="security-warning">
+
+        ⚠️ الكاميرا في المتصفح تحتاج عادةً إلى اتصال آمن HTTPS.
+        إذا رفض المتصفح فتح الكاميرا، افتح الموقع من رابط HTTPS
+        بدل HTTP.
+
+    </div>
+
+
+    <div class="info">
+
+        <strong>حالة الكاميرا</strong>
+
+        <div id="details">
+            جاري الاتصال بالكمبيوتر...
+        </div>
+
+        <div class="info-row">
+            <span>الاتصال</span>
+            <span
+                id="connectionValue"
+                class="info-value">
+                انتظار
+            </span>
+        </div>
+
+        <div class="info-row">
+            <span>الكاميرا</span>
+            <span
+                id="cameraValue"
+                class="info-value">
+                متوقفة
+            </span>
+        </div>
+
+        <div class="info-row">
+            <span>الدقة</span>
+            <span
+                id="resolutionValue"
+                class="info-value">
+                —
+            </span>
+        </div>
+
+        <div class="info-row">
+            <span>الزوم</span>
+            <span
+                id="infoZoom"
+                class="info-value">
+                1.0x
+            </span>
+        </div>
+
+        <br>
+
+        <strong>التحكم بالزوم</strong>
+
+        <div>
+            استخدم ＋ و − أو حرّك إصبعين على الشاشة للتكبير والتصغير.
+            عند التكبير يمكنك تحريك الصورة بإصبع واحد.
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   VARIABLES
+===================================================== */
+
+let peer = null;
+
+let stream = null;
+
+let call = null;
+
+let connected = false;
+
+let cameraRunning = false;
+
+let facing = "environment";
+
+let zoom = 1;
+
+let offsetX = 0;
+
+let offsetY = 0;
+
+let startDistance = 0;
+
+let startZoom = 1;
+
+let startPanX = 0;
+
+let startPanY = 0;
+
+let panStartX = 0;
+
+let panStartY = 0;
+
+let isPanning = false;
+
+let reconnectTimer = null;
+
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
+
+const status =
+    document.getElementById("status");
+
+const details =
+    document.getElementById("details");
+
+const preview =
+    document.getElementById("preview");
+
+const start =
+    document.getElementById("start");
+
+const switchButton =
+    document.getElementById("switch");
+
+const stopButton =
+    document.getElementById("stop");
+
+const fullscreenButton =
+    document.getElementById("fullscreen");
+
+const closeFullscreen =
+    document.getElementById("closeFullscreen");
+
+const videoContainer =
+    document.getElementById("videoContainer");
+
+const zoomIn =
+    document.getElementById("zoomIn");
+
+const zoomOut =
+    document.getElementById("zoomOut");
+
+const zoomReset =
+    document.getElementById("zoomReset");
+
+const zoomValue =
+    document.getElementById("zoomValue");
+
+const zoomLabel =
+    document.getElementById("zoomLabel");
+
+const connectionDot =
+    document.getElementById("connectionDot");
+
+const connectionValue =
+    document.getElementById("connectionValue");
+
+const cameraValue =
+    document.getElementById("cameraValue");
+
+const resolutionValue =
+    document.getElementById("resolutionValue");
+
+const infoZoom =
+    document.getElementById("infoZoom");
+
+const securityWarning =
+    document.getElementById("securityWarning");
+
+
+/* =====================================================
+   VIEWER ID
+===================================================== */
+
+const params =
+    new URLSearchParams(
+        window.location.search
+    );
+
+const viewer =
+    params.get("viewer");
+
+
+/* =====================================================
+   CHECK ENVIRONMENT
+===================================================== */
+
+if(!viewer){
+
+    setStatus(
+        "❌ رابط غير صحيح",
+        "error"
+    );
+
+    details.textContent =
+        "لا يوجد معرف الكمبيوتر في الرابط. ارجع إلى الكمبيوتر وامسح رمز QR من جديد.";
+
+}else{
+
+    if(
+        location.protocol !== "https:" &&
+        location.hostname !== "localhost" &&
+        location.hostname !== "127.0.0.1"
+    ){
+
+        securityWarning.classList.add(
+            "show"
+        );
+
+    }
+
+    connect();
+
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+function setStatus(
+    message,
+    type = "wait"
+){
+
+    status.textContent =
+        message;
+
+    status.classList.remove(
+        "ok",
+        "error",
+        "wait"
+    );
+
+    status.classList.add(
+        type
+    );
+
+}
+
+
+/* =====================================================
+   CONNECT PEER
+===================================================== */
+
+function connect(){
+
+    if(
+        typeof Peer ===
+        "undefined"
+    ){
+
+        setStatus(
+            "❌ تعذر تحميل نظام الاتصال",
+            "error"
+        );
+
+        details.textContent =
+            "تأكد من اتصال الإنترنت ثم أعد تحميل الصفحة.";
+
+        return;
+
+    }
+
+
+    setStatus(
+        "🔄 جاري الاتصال بالكمبيوتر...",
+        "wait"
+    );
+
+
+    connectionValue.textContent =
+        "اتصال...";
+
+
+    peer =
+        new Peer();
+
+
+    peer.on(
+        "open",
+        function(id){
+
+            console.log(
+                "Phone Peer ID:",
+                id
+            );
+
+
+            connected =
+                true;
+
+
+            setStatus(
+                "🟢 متصل بالكمبيوتر",
+                "ok"
+            );
+
+
+            connectionValue.textContent =
+                "متصل";
+
+
+            connectionDot.classList.add(
+                "active"
+            );
+
+
+            details.textContent =
+                "الاتصال جاهز. اضغط تشغيل الكاميرا.";
+
+
+            start.disabled =
+                false;
+
+
+            start.textContent =
+                "📷 تشغيل الكاميرا";
+
+        }
+    );
+
+
+    peer.on(
+        "disconnected",
+        function(){
+
+            connected =
+                false;
+
+
+            connectionValue.textContent =
+                "منقطع";
+
+
+            connectionDot.classList.remove(
+                "active"
+            );
+
+
+            setStatus(
+                "🟠 انقطع الاتصال",
+                "wait"
+            );
+
+
+            details.textContent =
+                "جاري محاولة إعادة الاتصال...";
+
+
+            attemptReconnect();
+
+        }
+    );
+
+
+    peer.on(
+        "close",
+        function(){
+
+            connected =
+                false;
+
+
+            connectionValue.textContent =
+                "مغلق";
+
+
+            connectionDot.classList.remove(
+                "active"
+            );
+
+
+            setStatus(
+                "🔴 انتهى الاتصال",
+                "error"
+            );
+
+        }
+    );
+
+
+    peer.on(
+        "error",
+        function(error){
+
+            console.error(
+                "PeerJS Error:",
+                error
+            );
+
+
+            connected =
+                false;
+
+
+            connectionValue.textContent =
+                "خطأ";
+
+
+            connectionDot.classList.remove(
+                "active"
+            );
+
+
+            let message =
+                "تعذر الاتصال بالكمبيوتر.";
+
+
+            if(
+                error &&
+                error.type ===
+                "peer-unavailable"
+            ){
+
+                message =
+                    "الكمبيوتر غير متاح حاليًا. تأكد أن صفحة الكمبيوتر مفتوحة.";
+
+            }
+
+
+            setStatus(
+                "❌ خطأ في الاتصال",
+                "error"
+            );
+
+
+            details.textContent =
+                message;
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   RECONNECT
+===================================================== */
+
+function attemptReconnect(){
+
+    clearTimeout(
+        reconnectTimer
+    );
+
+
+    reconnectTimer =
+        setTimeout(
+            function(){
+
+                if(
+                    peer &&
+                    !connected
+                ){
+
+                    try{
+
+                        peer.reconnect();
+
+                    }catch(error){
+
+                        console.error(error);
+
+                    }
+
+                }
+
+            },
+            2500
+        );
+
+}
+
+
+/* =====================================================
+   START BUTTON
+===================================================== */
+
+start.addEventListener(
+    "click",
+    startCamera
+);
+
+
+/* =====================================================
+   START CAMERA
+===================================================== */
+
+async function startCamera(){
+
+    if(
+        !peer ||
+        !connected
+    ){
+
+        setStatus(
+            "⏳ انتظر الاتصال بالكمبيوتر",
+            "wait"
+        );
+
+        return;
+
+    }
+
+
+    try{
+
+        start.disabled =
+            true;
+
+
+        setStatus(
+            "📷 جاري تشغيل الكاميرا...",
+            "wait"
+        );
+
+
+        /*
+            إيقاف الكاميرا السابقة
+            بدون تدمير اتصال Peer.
+        */
+
+        if(stream){
+
+            stream
+                .getTracks()
+                .forEach(
+                    track =>
+                    track.stop()
+                );
+
+        }
+
+
+        /*
+            فتح الكاميرا.
+        */
+
+        stream =
+            await navigator
+            .mediaDevices
+            .getUserMedia({
+
+                video:{
+
+                    facingMode:{
+                        ideal:facing
+                    },
+
+                    width:{
+                        ideal:1920,
+                        max:1920
+                    },
+
+                    height:{
+                        ideal:1080,
+                        max:1080
+                    },
+
+                    frameRate:{
+                        ideal:30,
+                        max:30
+                    }
+
+                },
+
+                audio:false
+
+            });
+
+
+        cameraRunning =
+            true;
+
+
+        preview.srcObject =
+            stream;
+
+
+        await preview.play()
+            .catch(
+                () => {}
+            );
+
+
+        resetZoom();
+
+
+        updateCameraInfo();
+
+
+        /*
+            إذا كان هناك اتصال قديم
+            نغلقه قبل إنشاء بث جديد.
+        */
+
+        if(call){
+
+            try{
+
+                call.close();
+
+            }catch(error){}
+
+            call =
+                null;
+
+        }
+
+
+        /*
+            إرسال الفيديو للكمبيوتر.
+        */
+
+        call =
+            peer.call(
+                viewer,
+                stream
+            );
+
+
+        if(!call){
+
+            throw new Error(
+                "تعذر إنشاء بث الفيديو."
+            );
+
+        }
+
+
+        call.on(
+            "close",
+            function(){
+
+                if(cameraRunning){
+
+                    setStatus(
+                        "🟠 تم إيقاف البث",
+                        "wait"
+                    );
+
+
+                    details.textContent =
+                        "تم إغلاق اتصال الفيديو بالكمبيوتر.";
+
+                }
+
+            }
+        );
+
+
+        call.on(
+            "error",
+            function(error){
+
+                console.error(
+                    "Call error:",
+                    error
+                );
+
+
+                setStatus(
+                    "❌ خطأ في بث الفيديو",
+                    "error"
+                );
+
+
+                details.textContent =
+                    "حدث خطأ أثناء إرسال الفيديو للكمبيوتر.";
+
+            }
+        );
+
+
+        setStatus(
+            "🟢 الكاميرا تعمل",
+            "ok"
+        );
+
+
+        details.textContent =
+            "الفيديو يتم بثه الآن إلى الكمبيوتر.";
+
+
+        cameraValue.textContent =
+            "تعمل";
+
+
+        switchButton.disabled =
+            false;
+
+
+        stopButton.disabled =
+            false;
+
+
+    }catch(error){
+
+        console.error(
+            "Camera error:",
+            error
+        );
+
+
+        cameraRunning =
+            false;
+
+
+        start.disabled =
+            false;
+
+
+        setStatus(
+            "❌ تعذر تشغيل الكاميرا",
+            "error"
+        );
+
+
+        cameraValue.textContent =
+            "متوقفة";
+
+
+        if(
+            error.name ===
+            "NotAllowedError"
+        ){
+
+            details.textContent =
+                "تم رفض إذن الكاميرا. افتح إعدادات المتصفح واسمح باستخدام الكاميرا.";
+
+        }
+        else if(
+            error.name ===
+            "NotFoundError"
+        ){
+
+            details.textContent =
+                "لم يتم العثور على كاميرا في الجهاز.";
+
+        }
+        else if(
+            error.name ===
+            "NotReadableError"
+        ){
+
+            details.textContent =
+                "الكاميرا مستخدمة من تطبيق آخر. أغلق التطبيقات التي تستخدم الكاميرا ثم حاول مرة أخرى.";
+
+        }
+        else if(
+            error.name ===
+            "SecurityError"
+        ){
+
+            details.textContent =
+                "المتصفح منع الكاميرا بسبب إعدادات الأمان. استخدم HTTPS.";
+
+        }
+        else{
+
+            details.textContent =
+                error.message ||
+                "حدث خطأ غير معروف في الكاميرا.";
+
+        }
+
+    }
+
+}
+
+
+/* =====================================================
+   STOP CAMERA
+===================================================== */
+
+stopButton.addEventListener(
+    "click",
+    stopCamera
+);
+
+
+function stopCamera(){
+
+    cameraRunning =
+        false;
+
+
+    if(stream){
+
+        stream
+            .getTracks()
+            .forEach(
+                track =>
+                track.stop()
+            );
+
+        stream =
+            null;
+
+    }
+
+
+    if(call){
+
+        try{
+
+            call.close();
+
+        }catch(error){}
+
+        call =
+            null;
+
+    }
+
+
+    preview.srcObject =
+        null;
+
+
+    stopButton.disabled =
+        true;
+
+
+    switchButton.disabled =
+        true;
+
+
+    start.disabled =
+        !connected;
+
+
+    start.textContent =
+        connected
+            ? "📷 تشغيل الكاميرا"
+            : "⏳ جاري الاتصال...";
+
+
+    cameraValue.textContent =
+        "متوقفة";
+
+
+    resolutionValue.textContent =
+        "—";
+
+
+    if(connected){
+
+        setStatus(
+            "🟠 الكاميرا متوقفة",
+            "wait"
+        );
+
+
+        details.textContent =
+            "اضغط تشغيل الكاميرا للبدء.";
+
+    }
+
+}
+
+
+/* =====================================================
+   SWITCH CAMERA
+===================================================== */
+
+switchButton.addEventListener(
+    "click",
+    async function(){
+
+        if(
+            !connected ||
+            !cameraRunning
+        ){
+
+            return;
+
+        }
+
+
+        facing =
+            facing === "environment"
+                ? "user"
+                : "environment";
+
+
+        await startCamera();
+
+    }
+);
+
+
+/* =====================================================
+   ZOOM IN
+===================================================== */
+
+zoomIn.addEventListener(
+    "click",
+    function(){
+
+        changeZoom(
+            0.25
+        );
+
+    }
+);
+
+
+/* =====================================================
+   ZOOM OUT
+===================================================== */
+
+zoomOut.addEventListener(
+    "click",
+    function(){
+
+        changeZoom(
+            -0.25
+        );
+
+    }
+);
+
+
+/* =====================================================
+   ZOOM RESET
+===================================================== */
+
+zoomReset.addEventListener(
+    "click",
+    function(){
+
+        resetZoom();
+
+    }
+);
+
+
+/* =====================================================
+   CHANGE ZOOM
+===================================================== */
+
+function changeZoom(
+    amount
+){
+
+    zoom += amount;
+
+
+    zoom =
+        Math.max(
+            1,
+            Math.min(
+                4,
+                zoom
+            )
+        );
+
+
+    if(zoom === 1){
+
+        offsetX = 0;
+        offsetY = 0;
+
+    }
+
+
+    updateZoom();
+
+}
+
+
+/* =====================================================
+   RESET ZOOM
+===================================================== */
+
+function resetZoom(){
+
+    zoom = 1;
+
+    offsetX = 0;
+
+    offsetY = 0;
+
+    updateZoom();
+
+}
+
+
+/* =====================================================
+   UPDATE ZOOM
+===================================================== */
+
+function updateZoom(){
+
+    preview.style.transform =
+        "translate(" +
+        offsetX +
+        "px," +
+        offsetY +
+        "px) scale(" +
+        zoom +
+        ")";
+
+
+    const text =
+        zoom.toFixed(1) +
+        "x";
+
+
+    zoomValue.textContent =
+        text;
+
+
+    zoomLabel.textContent =
+        text;
+
+
+    infoZoom.textContent =
+        text;
+
+}
+
+
+/* =====================================================
+   PINCH START
+===================================================== */
+
+videoContainer.addEventListener(
+    "touchstart",
+    function(event){
+
+        if(
+            event.touches.length === 2
+        ){
+
+            event.preventDefault();
+
+
+            startDistance =
+                getDistance(
+                    event.touches[0],
+                    event.touches[1]
+                );
+
+
+            startZoom =
+                zoom;
+
+        }
+
+        else if(
+            event.touches.length === 1 &&
+            zoom > 1
+        ){
+
+            panStartX =
+                event.touches[0].clientX;
+
+            panStartY =
+                event.touches[0].clientY;
+
+
+            startPanX =
+                offsetX;
+
+            startPanY =
+                offsetY;
+
+
+            isPanning =
+                true;
+
+        }
+
+    },
+    {
+        passive:false
+    }
+);
+
+
+/* =====================================================
+   PINCH MOVE
+===================================================== */
+
+videoContainer.addEventListener(
+    "touchmove",
+    function(event){
+
+        event.preventDefault();
+
+
+        /*
+            إصبعان = Zoom
+        */
+
+        if(
+            event.touches.length === 2
+        ){
+
+            const distance =
+                getDistance(
+                    event.touches[0],
+                    event.touches[1]
+                );
+
+
+            if(startDistance > 0){
+
+                const scale =
+                    distance /
+                    startDistance;
+
+
+                zoom =
+                    startZoom *
+                    scale;
+
+
+                zoom =
+                    Math.max(
+                        1,
+                        Math.min(
+                            4,
+                            zoom
+                        )
+                    );
+
+
+                if(zoom === 1){
+
+                    offsetX = 0;
+                    offsetY = 0;
+
+                }
+
+
+                updateZoom();
+
+            }
+
+        }
+
+        /*
+            إصبع واحد = تحريك
+        */
+
+        else if(
+            event.touches.length === 1 &&
+            zoom > 1 &&
+            isPanning
+        ){
+
+            offsetX =
+                startPanX +
+                (
+                    event.touches[0].clientX -
+                    panStartX
+                );
+
+
+            offsetY =
+                startPanY +
+                (
+                    event.touches[0].clientY -
+                    panStartY
+                );
+
+
+            /*
+                حد بسيط حتى لا تختفي
+                الصورة بالكامل خارج الشاشة.
+            */
+
+            const limitX =
+                videoContainer.clientWidth *
+                (zoom - 1) /
+                2;
+
+
+            const limitY =
+                videoContainer.clientHeight *
+                (zoom - 1) /
+                2;
+
+
+            offsetX =
+                Math.max(
+                    -limitX,
+                    Math.min(
+                        limitX,
+                        offsetX
+                    )
+                );
+
+
+            offsetY =
+                Math.max(
+                    -limitY,
+                    Math.min(
+                        limitY,
+                        offsetY
+                    )
+                );
+
+
+            updateZoom();
+
+        }
+
+    },
+    {
+        passive:false
+    }
+);
+
+
+/* =====================================================
+   TOUCH END
+===================================================== */
+
+videoContainer.addEventListener(
+    "touchend",
+    function(){
+
+        startDistance =
+            0;
+
+        isPanning =
+            false;
+
+    }
+);
+
+
+/* =====================================================
+   DISTANCE
+===================================================== */
+
+function getDistance(
+    a,
+    b
+){
+
+    const x =
+        a.clientX -
+        b.clientX;
+
+
+    const y =
+        a.clientY -
+        b.clientY;
+
+
+    return Math.sqrt(
+        x * x +
+        y * y
+    );
+
+}
+
+
+/* =====================================================
+   FULLSCREEN
+===================================================== */
+
+fullscreenButton.addEventListener(
+    "click",
+    enterFullscreen
+);
+
+
+closeFullscreen.addEventListener(
+    "click",
+    exitFullscreen
+);
+
+
+async function enterFullscreen(){
+
+    videoContainer.classList.add(
+        "fullscreen"
+    );
+
+
+    try{
+
+        if(
+            videoContainer.requestFullscreen
+        ){
+
+            await videoContainer.requestFullscreen();
+
+        }
+
+    }catch(error){
+
+        console.log(
+            "Fullscreen API:",
+            error
+        );
+
+    }
+
+}
+
+
+async function exitFullscreen(){
+
+    videoContainer.classList.remove(
+        "fullscreen"
+    );
+
+
+    try{
+
+        if(
+            document.fullscreenElement
+        ){
+
+            await document.exitFullscreen();
+
+        }
+
+    }catch(error){
+
+        console.log(error);
+
+    }
+
+}
+
+
+/* =====================================================
+   FULLSCREEN EVENT
+===================================================== */
+
+document.addEventListener(
+    "fullscreenchange",
+    function(){
+
+        if(
+            !document.fullscreenElement
+        ){
+
+            videoContainer.classList.remove(
+                "fullscreen"
+            );
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   CAMERA INFO
+===================================================== */
+
+function updateCameraInfo(){
+
+    if(!stream){
+
+        resolutionValue.textContent =
+            "—";
+
+        return;
+
+    }
+
+
+    const track =
+        stream.getVideoTracks()[0];
+
+
+    if(!track){
+
+        return;
+
+    }
+
+
+    const settings =
+        track.getSettings();
+
+
+    if(
+        settings.width &&
+        settings.height
+    ){
+
+        resolutionValue.textContent =
+            settings.width +
+            "×" +
+            settings.height;
+
+    }
+
+}
+
+
+/* =====================================================
+   PERIODIC CAMERA INFO
+===================================================== */
+
+setInterval(
+    function(){
+
+        if(stream){
+
+            updateCameraInfo();
+
+        }
+
+    },
+    2000
+);
+
+
+/* =====================================================
+   PAGE VISIBILITY
+===================================================== */
+
+document.addEventListener(
+    "visibilitychange",
+    function(){
+
+        /*
+            لا نوقف الكاميرا عند انتقال
+            الصفحة للخلف، لأن بعض المتصفحات
+            قد تستمر في البث.
+        */
+
+        if(
+            document.visibilityState ===
+            "visible"
+        ){
+
+            if(
+                stream &&
+                cameraRunning
+            ){
+
+                preview.play()
+                    .catch(
+                        () => {}
+                    );
+
+            }
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   BEFORE UNLOAD
+===================================================== */
+
+window.addEventListener(
+    "beforeunload",
+    function(){
+
+        if(stream){
+
+            stream
+                .getTracks()
+                .forEach(
+                    track =>
+                    track.stop()
+                );
+
+        }
+
+        if(call){
+
+            try{
+
+                call.close();
+
+            }catch(error){}
+
+        }
+
+        if(peer){
+
+            try{
+
+                peer.destroy();
+
+            }catch(error){}
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   INITIAL
+===================================================== */
+
+updateZoom();
+
+</script>
+
+</body>
+</html>
